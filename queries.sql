@@ -241,20 +241,36 @@ WHERE rn IN ((cnt + 1) / 2, (cnt + 2) / 2)
 GROUP BY era
 ORDER BY era;
 
--- ...but age is mostly a proxy. Breaking each era down by size and $/sqft shows
--- old homes are small but pricey per foot (location), new homes are bigger.
+-- ...but age is mostly a proxy. Each era's typical size and MEDIAN price per
+-- sqft show old homes are small but pricey per foot (location), new ones are
+-- bigger. Median (not average) for $/sqft, because luxury sales would otherwise
+-- distort it. The CASE...WHEN rn IN (middle) trick keeps only the middle rows,
+-- and AVG ignores the NULLs, so AVG of those rows = the median.
+WITH ranked AS (
+    SELECT
+        CASE
+            WHEN year_built < 1950 THEN '1) before 1950'
+            WHEN year_built < 1970 THEN '2) 1950 - 1969'
+            WHEN year_built < 1990 THEN '3) 1970 - 1989'
+            WHEN year_built < 2010 THEN '4) 1990 - 2009'
+            ELSE                        '5) 2010+'
+        END AS era,
+        living_area_sqft,
+        sale_amount * 1.0 / living_area_sqft AS price_per_sqft,
+        ROW_NUMBER() OVER (PARTITION BY (year_built < 2010) + (year_built < 1990)
+                                      + (year_built < 1970) + (year_built < 1950)
+                           ORDER BY sale_amount * 1.0 / living_area_sqft) AS rn,
+        COUNT(*) OVER (PARTITION BY (year_built < 2010) + (year_built < 1990)
+                                  + (year_built < 1970) + (year_built < 1950)) AS cnt
+    FROM clean_sales
+    WHERE year_built > 0 AND living_area_sqft > 0
+)
 SELECT
-    CASE
-        WHEN year_built < 1950 THEN '1) before 1950'
-        WHEN year_built < 1970 THEN '2) 1950 - 1969'
-        WHEN year_built < 1990 THEN '3) 1970 - 1989'
-        WHEN year_built < 2010 THEN '4) 1990 - 2009'
-        ELSE                        '5) 2010+'
-    END AS era,
-    COUNT(*)                                        AS sales,
-    ROUND(AVG(living_area_sqft))                    AS avg_sqft,
-    ROUND(AVG(sale_amount * 1.0 / living_area_sqft)) AS avg_price_per_sqft
-FROM clean_sales
-WHERE year_built > 0 AND living_area_sqft > 0
+    era,
+    cnt AS sales,
+    ROUND(AVG(living_area_sqft)) AS avg_sqft,
+    ROUND(AVG(CASE WHEN rn IN ((cnt + 1) / 2, (cnt + 2) / 2)
+                   THEN price_per_sqft END)) AS median_price_per_sqft
+FROM ranked
 GROUP BY era
 ORDER BY era;
