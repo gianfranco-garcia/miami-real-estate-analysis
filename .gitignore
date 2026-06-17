@@ -4,8 +4,5 @@ miami_properties_raw.csv
 # Local SQLite database
 miami.db
 
-# Internal working notes (not for the public repo)
-CLAUDE.md
-
 # macOS junk
 .DS_Store
