@@ -59,10 +59,28 @@ rest, and I said so on the chart instead of quietly hiding it.
 - `data/clean_sales_tableau.csv` — the cleaned dataset I fed into Tableau (195,210 rows).
 - The raw file (~400MB) isn't included; you can download it from the Open Data Hub link above.
 
-The queries use window functions (ROW_NUMBER with PARTITION BY) to get the median
-sale price per ZIP, CASE statements for the residential filter and the size buckets,
-and CREATE TABLE AS SELECT to build the clean table. Median is done with ORDER BY
-plus LIMIT/OFFSET, since SQLite has no built-in median function.
+The queries use window functions (ROW_NUMBER with PARTITION BY) for the median
+price per ZIP, CASE statements for the residential filter and the size buckets,
+and CREATE TABLE AS SELECT to build the clean table. SQLite has no median
+function, so I rank the rows and average the one or two middle values, which
+matches how Tableau computes the median.
+
+## Reproduce it yourself
+Everything in the dashboard comes straight out of `queries.sql`:
+
+1. Download the raw "Property Point View" CSV from the Open Data Hub link above
+   and save it as `miami_properties_raw.csv`.
+2. Load it and run the queries:
+
+   ```bash
+   sqlite3 miami.db
+   .mode csv
+   .import miami_properties_raw.csv properties
+   .read queries.sql
+   ```
+
+That rebuilds the clean table (195,210 rows) and prints every number behind the
+dashboard, from the $445K median to the Top 10 ZIPs.
 
 ## Limitations
 This shows patterns, not causes. Location and home size are tangled together (big
