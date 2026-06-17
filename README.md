@@ -30,11 +30,12 @@ not a tax estimate.
 
 ## How I cleaned it
 I went from ~943K raw records down to 195,210 real residential sales. The main calls:
-- Kept only residential properties. I wrote a filter to drop vacant land, commercial
-  buildings, docks, parking garages, and a few other non-home types.
+- Kept only residential properties, since the question is about homes people live
+  in, not land deals or office buildings. I wrote a filter to drop vacant land,
+  commercial buildings, docks, parking garages, and other non-home types.
 - Kept only sales from 2020 on, so it reflects the current market.
-- Dropped any sale of $10,000 or less. There were ~306K sales at $0 or $100
-  (probably family transfers), and those aren't real prices.
+- Dropped any sale of $10,000 or less. More than 300,000 sales were priced at $0 or
+  $100 (likely transfers between family or owners), which aren't real market prices.
 
 I also used ZIP code instead of city. The city field was a mess: more than half the
 sales were dumped into vague labels like "Miami" or "Unincorporated County", which
@@ -55,9 +56,9 @@ from everywhere else. I left it out of the scatter plot so it wouldn't flatten t
 rest, and I said so on the chart instead of quietly hiding it.
 
 ## What's in this repo
-- `queries.sql` — all the SQL, from loading and cleaning to the analysis.
-- `data/clean_sales_tableau.csv` — the cleaned dataset I fed into Tableau (195,210 rows).
-- The raw file (~400MB) isn't included; you can download it from the Open Data Hub link above.
+- `queries.sql`: the full SQL, from loading and cleaning to the analysis.
+- `data/clean_sales_tableau.csv`: the cleaned dataset I fed into Tableau (195,210 rows).
+- The raw file (~400MB) isn't included since it's too big for GitHub; download it from the Open Data Hub link above.
 
 The queries use window functions (ROW_NUMBER with PARTITION BY) for the median
 price per ZIP, CASE statements for the residential filter and the size buckets,
