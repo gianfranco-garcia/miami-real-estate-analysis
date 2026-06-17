@@ -1,6 +1,6 @@
 # Miami Real Estate: Where Are Miami's Most Expensive Neighborhoods?
 
-I pulled 195,210 home sales from Miami-Dade's public records (2020–2024) and used
+I pulled 195,210 home sales from Miami-Dade's public records (2020–2026) and used
 SQL and Tableau to figure out where prices are highest, and why some areas cost
 more than others.
 
