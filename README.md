@@ -29,31 +29,46 @@ actual sale price. That worked out better anyway, since it's real market data an
 not a tax estimate.
 
 ## How I cleaned it
-I went from ~943K raw records down to 195,210 real residential sales. The main calls:
-- Kept only residential properties, since the question is about homes people live
-  in, not land deals or office buildings. I wrote a filter to drop vacant land,
-  commercial buildings, docks, parking garages, and other non-home types.
-- Kept only sales from 2020 on, so it reflects the current market.
-- Dropped any sale of $10,000 or less. More than 300,000 sales were priced at $0 or
-  $100 (likely transfers between family or owners), which aren't real market prices.
+I went from ~943K raw records down to 195,210 real residential sales, and the
+reasoning behind each cut matters as much as the cut itself:
 
-I also used ZIP code instead of city. The city field was a mess: more than half the
-sales were dumped into vague labels like "Miami" or "Unincorporated County", which
-is useless on a map. ZIP codes are specific and Tableau maps them cleanly.
+- I kept only residential properties, since the question is about homes people live
+  in, not land or offices. That meant dropping vacant land, commercial buildings,
+  docks, parking garages, and other non-home types. It took a few passes (seven
+  filter rules) because some non-homes are labeled in odd ways.
+- I kept only sales from 2020 on, to reflect today's market instead of decade-old deals.
+- I dropped any sale of $10,000 or less, and this one was a real judgment call. More
+  than 300,000 sales were priced at $0 or $100, which are transfers between family or
+  owners, not real prices. The data showed a clear gap right after that: almost
+  nothing sold between $101 and $1,000 (about 600 sales total), so $1,000 is where
+  symbolic prices end. I pushed the line up to $10,000 to also drop the scattered
+  distressed and partial-interest sales in between, which don't reflect what a normal
+  buyer pays. It moves the numbers, so I'm stating it instead of burying it.
+
+I also switched from city to ZIP code. The city field was a mess: more than half the
+sales fell into vague labels like "Miami" or "Unincorporated County", useless on a
+map. ZIP codes are specific and Tableau maps them cleanly.
 
 ## The analysis
-Three questions:
-1. Where are prices highest? Mostly the south coast and older prestige
-   neighborhoods, not only the waterfront like I assumed going in.
-2. Is an area expensive because of location or size? I calculated price per square
-   foot by ZIP to split the two. Downtown and Brickell condos cost a lot per square
-   foot but less in total; big suburban homes are the opposite.
-3. Does the age of the house matter? Price by decade built makes a U-shape, but age
-   is really just standing in for location and size, so I didn't lean on it alone.
+Two questions drove the dashboard.
 
-One honesty note: Fisher Island sells for around $1,700 per square foot, way off
-from everywhere else. I left it out of the scatter plot so it wouldn't flatten the
-rest, and I said so on the chart instead of quietly hiding it.
+First, where are prices highest? The most expensive ZIPs sit along the south coast
+(Fisher Island, Key Biscayne) and in a few established inland neighborhoods (Coral
+Gables, Pinecrest, Coconut Grove). I went in assuming it would all be waterfront, but
+the prestige inland areas hold their own. The cheapest ZIPs are inland to the west
+and north (Hialeah, Little Havana, West Kendall), and the priciest ZIP runs about 21
+times the cheapest.
+
+Second, is an area expensive because of location or because of size? To tell them
+apart I took the median price per square foot for each ZIP. It splits into two kinds
+of expensive: dense urban ZIPs like Downtown and Brickell charge a lot per square
+foot but less in total (you're paying for location, in small well-placed condos),
+while suburban ZIPs like Pinecrest have high totals but a moderate price per foot
+(you're paying for space, in big houses). Only Fisher Island tops both.
+
+One honesty note: Fisher Island sells for around $1,700 per square foot, way off from
+everywhere else. I left it out of the scatter plot so it wouldn't flatten the rest,
+and I said so on the chart instead of quietly hiding it.
 
 ## What's in this repo
 - `queries.sql`: the full SQL, from loading and cleaning to the analysis.
