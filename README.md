@@ -82,11 +82,21 @@ function, so I rank the rows and average the one or two middle values, which
 matches how Tableau computes the median.
 
 ## Reproduce it yourself
-Everything in the dashboard comes straight out of `queries.sql`:
+You'll need `sqlite3`, which comes built in on macOS and Linux. The cleaned data is
+already in this repo (`data/clean_sales_tableau.csv`) if you just want to look at it;
+the steps below rebuild it from scratch and reprint every number in the dashboard.
 
-1. Download the raw "Property Point View" CSV from the Open Data Hub link above
-   and save it as `miami_properties_raw.csv`.
-2. Load it and run the queries:
+1. Clone the repo and open the folder:
+
+   ```bash
+   git clone https://github.com/gianfranco-garcia/miami-real-estate-analysis.git
+   cd miami-real-estate-analysis
+   ```
+2. Download the raw data: open the
+   [Property Point View dataset](https://gis-mdc.opendata.arcgis.com/datasets/property-point-view/explore),
+   use its Download option, choose the full CSV, and save it in this folder as
+   `miami_properties_raw.csv`. It's about 400MB, which is why it isn't stored here.
+3. Load it into SQLite and run the queries:
 
    ```bash
    sqlite3 miami.db
@@ -95,18 +105,32 @@ Everything in the dashboard comes straight out of `queries.sql`:
    .read queries.sql
    ```
 
-That rebuilds the clean table (195,210 rows) and prints every number behind the
-dashboard, from the $445K median to the Top 10 ZIPs.
+You'll see the clean table rebuild to 195,210 rows and every figure print out, from
+the $445K median to the Top 10 ZIPs.
 
 ## Limitations
-This shows patterns, not causes. Location and home size are tangled together (big
-houses tend to sit in pricey ZIPs), so I don't claim one causes the other. I also
-only ranked ZIPs with at least 100 sales, so a handful of tiny ZIPs are left out.
+A few honest caveats:
+
+- This is descriptive, not predictive. I'm showing patterns, not building a model or
+  claiming cause and effect. Location and home size are tangled together (big houses
+  tend to sit in pricey ZIPs), so I don't say one drives the other.
+- I only ranked ZIPs with at least 100 sales, so the median stays steady. That leaves
+  a few tiny ZIPs out of the rankings.
+- Some records were missing a bedroom count, year built, or living area (stored as 0).
+  I left those out of the specific chart that needed the field, not the whole dataset.
+- The $10,000 floor is a judgment call. Nudge it and the edges shift a little, though
+  the overall picture holds.
+- The data runs into mid-2026, so the most recent months are a partial year.
 
 ## Tools
 SQL (SQLite) for loading, cleaning and analysis. Tableau Public for the map and charts.
 
 ## What I'd tell a buyer
 In Miami the price tag matters less than what you're actually paying for: location or
-space. They show up in completely different neighborhoods, so figure out which one
-you care about before you start comparing prices.
+space, and the two barely overlap on the map. If you're after value, look inland to
+the west. For roughly what a small condo costs in Brickell or Downtown, you can get a
+much bigger house in an area like West Kendall. If you're set on a waterfront or
+prestige ZIP, know that you're mostly paying for the location, not the extra square
+footage. So the first question isn't how much you can spend. It's whether you care
+more about where you live or how much room you get, because those two answers point
+to completely different parts of the county.
